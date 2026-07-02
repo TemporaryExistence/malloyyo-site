@@ -1132,6 +1132,13 @@ body.theme-dark .recipe-explore { display: flex; flex-wrap: wrap; align-items: c
 body.theme-dark .explore-chip { display: inline-block; padding: .22rem .7rem; border: 1px solid #3a4150; border-radius: 8px; color: #e8a33d; text-decoration: none; }
 body.theme-dark .explore-chip:hover { border-color: #e8a33d; background: rgba(232, 163, 61, 0.08); }
 body.theme-dark .explore-note { font-size: .72rem; color: #7e8a95; }
+/* nested result mini-tables — the nest's own columns, rendered like Malloy's renderer */
+body.theme-dark .sandbox-results td.has-nested { padding: .3rem .6rem; }
+body.theme-dark .nested-table { width: auto; min-width: 16rem; border-collapse: collapse; margin: 0; }
+body.theme-dark .nested-table th { font-size: .68rem; text-transform: none; color: #7e8a95; font-weight: 500; padding: .15rem .8rem .15rem 0; text-align: left; border-bottom: 1px solid #1d222b; }
+body.theme-dark .nested-table td { font-size: .82rem; padding: .18rem .8rem .18rem 0; border-bottom: 1px solid #171b22; }
+body.theme-dark .nested-table tr:last-child td { border-bottom: 0; }
+body.theme-dark .nested-table th:last-child, body.theme-dark .nested-table td:last-child { text-align: right; padding-right: 0; }
 body.theme-dark .sandbox-pane { background: #12151b; border: 1px solid #262b35; }
 body.theme-dark .sandbox-editor { background: #0f151c; color: #e8eaed; border: 1px solid #262b35; }
 body.theme-dark .sandbox-tab { background: #12151b; color: #c7cdd4; border: 1px solid #262b35; }
