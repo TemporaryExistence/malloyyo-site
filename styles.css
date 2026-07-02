@@ -200,10 +200,19 @@ img { max-width: 100%; height: auto; display: block; }
 
 
 body.theme-dark {
+  /* One evolving field down the WHOLE page (never background-attachment: fixed — it pins the color
+     to the viewport and the page reads flat). Terminal-dark stays dominant; the blooms are whispers:
+     amber at the surfaces the eye rests (top, sandbox, cta), steel-blue mid-water, distributed 0→100%. */
   background-image:
-    radial-gradient(1100px 560px at 82% -10%, color-mix(in srgb, var(--brand) 12%, transparent), transparent),
-    radial-gradient(820px 520px at 0% 104%, color-mix(in srgb, var(--brand) 7%, transparent), transparent);
-  background-attachment: fixed;
+    radial-gradient(1100px 560px at 82% -6%, color-mix(in srgb, var(--brand) 12%, transparent), transparent 72%),
+    radial-gradient(900px 620px at 6% 8%, color-mix(in srgb, #8ab4f8 7%, transparent), transparent 74%),
+    radial-gradient(1200px 700px at 95% 22%, color-mix(in srgb, var(--brand) 6%, transparent), transparent 74%),
+    radial-gradient(1000px 640px at 12% 36%, color-mix(in srgb, #8ab4f8 6%, transparent), transparent 74%),
+    radial-gradient(1150px 680px at 88% 52%, color-mix(in srgb, #b3541e 6%, transparent), transparent 74%),
+    radial-gradient(950px 600px at 8% 64%, color-mix(in srgb, var(--brand) 7%, transparent), transparent 74%),
+    radial-gradient(1200px 720px at 90% 78%, color-mix(in srgb, #8ab4f8 5%, transparent), transparent 74%),
+    radial-gradient(1000px 620px at 15% 88%, color-mix(in srgb, #b3541e 5%, transparent), transparent 74%),
+    radial-gradient(900px 560px at 55% 100%, color-mix(in srgb, var(--brand) 8%, transparent), transparent 72%);
 }
 body.theme-bold {
   background-image:
@@ -1118,6 +1127,11 @@ body.theme-dark .sandbox-ds em { font-style: normal; justify-self: start; font-s
 body.theme-dark .sandbox-ds span { font-size: .78rem; color: #9aa4af; line-height: 1.4; }
 body.theme-dark .sandbox-ds.is-active { border-color: #e8a33d; box-shadow: inset 0 0 0 1px #e8a33d; }
 body.theme-dark .sandbox-ds.is-loading { opacity: .6; cursor: progress; }
+/* dataset-card action row — mirrors the live app's "Explore with:" affordance, wired to the sandbox */
+body.theme-dark .recipe-explore { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; margin: .8rem 0 .2rem; font-size: .78rem; color: #9aa4af; font-family: var(--font-head); }
+body.theme-dark .explore-chip { display: inline-block; padding: .22rem .7rem; border: 1px solid #3a4150; border-radius: 8px; color: #e8a33d; text-decoration: none; }
+body.theme-dark .explore-chip:hover { border-color: #e8a33d; background: rgba(232, 163, 61, 0.08); }
+body.theme-dark .explore-note { font-size: .72rem; color: #7e8a95; }
 body.theme-dark .sandbox-pane { background: #12151b; border: 1px solid #262b35; }
 body.theme-dark .sandbox-editor { background: #0f151c; color: #e8eaed; border: 1px solid #262b35; }
 body.theme-dark .sandbox-tab { background: #12151b; color: #c7cdd4; border: 1px solid #262b35; }
