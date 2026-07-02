@@ -5,8 +5,11 @@
  * computed from your input, not canned. Unsupported syntax fails with a friendly message; it never
  * fabricates output.
  *
- * DATA HONESTY: auto_recalls and baby_names run on REAL public data (assets/data.js — NHTSA recall flat
- * files + SSA by-state baby names; sources, refresh date, and the sampling rule are in that file's header).
+ * DATA HONESTY: auto_recalls and baby_names run on REAL public data (assets/data-recalls.js +
+ * assets/data-names.js — NHTSA recall flat files + SSA by-state baby names; sources, refresh date, and
+ * the sampling rule are in each file's header). Each data file loads on demand when its dataset is
+ * selected (recalls is the default and is preloaded from index.html), so first paint never waits on
+ * the full 700KB+ corpus.
  * order_items is a deterministic synthetic demo corpus over the example schema. The per-dataset caption
  * says exactly which is which in the UI. The live Malloyyo serves real models to any MCP client.
  *
@@ -30,16 +33,17 @@
   function makeRnd(seed) { var s = seed; return function () { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; }
 
   // ===== dataset builders ===================================================================================
-  // recalls + names are REAL public data (assets/data.js, built 2026-07-02 from the NHTSA recall flat files
-  // and the SSA by-state baby-names files — sources + sampling rule documented in that file's header).
+  // recalls + names are REAL public data (assets/data-recalls.js + assets/data-names.js, built 2026-07-02
+  // from the NHTSA recall flat files and the SSA by-state baby-names files — sources + sampling rule
+  // documented in each file's header).
   function buildRecalls() {
-    return window.MALLOYYO_DATA.recalls.map(function (r) {
+    return window.MALLOYYO_DATA_RECALLS.recalls.map(function (r) {
       return { manufacturer: r[0], component: r[1], subject: r[2], year: r[3], vehicles_affected: r[4], do_not_drive: r[5], completion_pct: r[6] };
     });
   }
 
   function buildNames() {
-    return window.MALLOYYO_DATA.names.map(function (r) {
+    return window.MALLOYYO_DATA_NAMES.names.map(function (r) {
       return { name: r[0], sex: r[1], decade: r[2], state: r[3], births: r[4] };
     });
   }
@@ -76,6 +80,7 @@
   var DATASETS = [
     {
       key: 'auto_recalls', source: 'recalls', label: 'auto_recalls',
+      data: { global: 'MALLOYYO_DATA_RECALLS', src: 'assets/data-recalls.js' },
       blurb: 'Real NHTSA vehicle recall campaigns, 1996 to now.',
       cols: ['manufacturer', 'component', 'subject', 'year', 'vehicles_affected', 'do_not_drive', 'completion_pct'],
       colAlias: { maker: 'manufacturer', vehicles: 'vehicles_affected' },
@@ -104,6 +109,7 @@
     },
     {
       key: 'baby_names', source: 'names', label: 'baby_names',
+      data: { global: 'MALLOYYO_DATA_NAMES', src: 'assets/data-names.js' },
       blurb: 'Real SSA baby names by decade and state.',
       cols: ['name', 'sex', 'decade', 'state', 'births'],
       colAlias: {},
@@ -457,7 +463,57 @@
 
   editor.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); compile(); } });
 
-  function selectDataset(d, initial, keepQuery) {
+  // ===== per-dataset lazy loading ===========================================================================
+  // Each real dataset carries {data: {global, src}}; its file is injected on first selection and the rows
+  // are built once. order_items has no data file (deterministic synthetic corpus, built inline).
+  var dataLoads = {};
+  function ensureDataset(d, cb, onFail) {
+    if (!d.data || window[d.data.global]) {
+      if (!d.rows) d.rows = d.build();
+      cb();
+      return;
+    }
+    var st = dataLoads[d.key];
+    if (!st) {
+      st = dataLoads[d.key] = { cbs: [], failed: false, done: false };
+      var s = document.createElement('script');
+      s.src = d.data.src; s.async = true;
+      s.onerror = function () { st.failed = true; };
+      document.head.appendChild(s);
+      (function poll(tries) {
+        if (window[d.data.global]) { st.done = true; flushLoad(st); return; }
+        if (st.failed || tries > 80) { st.failed = true; st.done = true; flushLoad(st); return; }
+        setTimeout(function () { poll(tries + 1); }, 100);
+      })(0);
+    }
+    st.cbs.push(function () {
+      if (window[d.data.global]) { if (!d.rows) d.rows = d.build(); cb(); }
+      else if (onFail) onFail();
+    });
+    if (st.done) flushLoad(st);
+  }
+  function flushLoad(st) {
+    var list = st.cbs.slice(); st.cbs.length = 0;
+    list.forEach(function (f) { f(); });
+  }
+
+  function selectDataset(d, initial, keepQuery, after) {
+    // mark the intent immediately, load the dataset's file if needed, then apply.
+    Array.prototype.forEach.call(dsBar.children, function (t) {
+      t.classList.toggle('is-loading', t.dataset.key === d.key && !(d.rows));
+    });
+    if (d.data && !window[d.data.global] && caption) caption.textContent = 'Loading the ' + d.label + ' data…';
+    ensureDataset(d, function () {
+      Array.prototype.forEach.call(dsBar.children, function (t) { t.classList.remove('is-loading'); });
+      applyDataset(d, initial, keepQuery);
+      if (after) after();
+    }, function () {
+      Array.prototype.forEach.call(dsBar.children, function (t) { t.classList.remove('is-loading'); });
+      if (caption) caption.textContent = 'The ' + d.label + ' data file did not load. Reload the page to try again.';
+    });
+  }
+
+  function applyDataset(d, initial, keepQuery) {
     DS = d;
     Array.prototype.forEach.call(dsBar.children, function (t) {
       var on = t.dataset.key === d.key; t.classList.toggle('is-active', on); t.setAttribute('aria-selected', on ? 'true' : 'false');
@@ -579,31 +635,22 @@
   function b64encode(s) { return btoa(unescape(encodeURIComponent(s))); }
   function b64decode(s) { return decodeURIComponent(escape(atob(s))); }
 
-  // boot: wait for the real-data file (assets/data.js, defer-loaded), build rows, then honor a share
-  // link (#d=<dataset>&q=<base64>) or default to the first dataset.
-  (function waitData(tries) {
-    if (!window.MALLOYYO_DATA) {
-      if (tries > 80) { app.innerHTML = '<p class="sandbox-note">The sandbox data file did not load. Reload the page to try again.</p>'; return; }
-      setTimeout(function () { waitData(tries + 1); }, 100);
-      return;
-    }
-    DATASETS.forEach(function (d) { d.rows = d.build(); });
-    boot();
-  })(0);
-  function boot() {
+  // boot: pick the target dataset (share link #d=<dataset>&q=<base64>, else the first), let
+  // selectDataset lazy-load its data file, then honor any shared query once the rows are ready.
+  (function boot() {
     var dm = /[#&]d=([^&]+)/.exec(location.hash || '');
     var qm = /[#&]q=([^&]+)/.exec(location.hash || '');
     var ds = DATASETS[0];
     if (dm) { var hit = DATASETS.filter(function (d) { return d.key === decodeURIComponent(dm[1]); })[0]; if (hit) ds = hit; }
-    if (qm) {
-      try {
-        var q = b64decode(decodeURIComponent(qm[1]));
-        selectDataset(ds, true, true);
+    var q = null;
+    if (qm) { try { q = b64decode(decodeURIComponent(qm[1])); } catch (e) { /* malformed link — default */ } }
+    if (q !== null) {
+      selectDataset(ds, true, true, function () {
         editor.value = q; editor.rows = Math.max(5, q.split('\n').length + 1);
         runQuery(true);
-        return;
-      } catch (e) { /* malformed link — fall through to the default */ }
+      });
+    } else {
+      selectDataset(ds, true);
     }
-    selectDataset(ds, true);
-  }
+  })();
 })();
