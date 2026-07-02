@@ -21,8 +21,11 @@ python3 -m http.server 8000   # or: npx serve .   (or just open index.html)
   ★ question, and the page walks the whole loop: *you ask in plain language → the Malloy your AI would
   compose → the SQL it compiles to → your answer*, computed live from your (editable) query. The example
   questions are the real ones from the live site's dataset cards.
-- **Data honesty:** the bundled samples are deterministic *synthetic* rows over each dataset's real
-  schema — demo corpora, labeled as such in the UI. The live Malloyyo answers from real data.
+- **Real data:** `auto_recalls` and `baby_names` run on real public data (`assets/data.js`): the NHTSA
+  recall flat files (1,500+ real vehicle campaigns since 1996, with real completion rates from NHTSA
+  quarterly reports where filed) and the SSA by-state baby-names files (21,000+ real decade/state rows).
+  Sources and the sampling rule are documented in that file's header. `order_items` is a deterministic
+  synthetic demo corpus, labeled as such in the UI.
 - Sections teaching the rest of the story: how to serve a model (`malloyyo publish` / GitHub webhook),
   how to connect an MCP client, and the architecture from the upstream README.
 
