@@ -322,12 +322,12 @@
         spec.aggregates.forEach(function (a) { row[a.name] = computeAgg(grp, a); });
         if (spec.nest) {
           var sub = runSpec(spec.nest.spec, grp);
-          row[spec.nest.name] = sub.rows.map(function (sr) {
-            var label = spec.nest.spec.groupBy[0] ? sr[spec.nest.spec.groupBy[0]] : '';
-            var metric = spec.nest.spec.aggregates[0] ? sr[spec.nest.spec.aggregates[0].name] : '';
-            if (typeof metric === 'number') metric = metric.toLocaleString();
-            return label + (metric !== '' ? ' ' + metric : '');
-          }).join('  ·  ');
+          // structured nest result — the renderer shows it as a nested mini-table (like Malloy's own renderer)
+          row[spec.nest.name] = {
+            _nested: true,
+            columns: spec.nest.spec.groupBy.concat(spec.nest.spec.aggregates.map(function (a) { return a.name; })),
+            rows: sub.rows
+          };
         }
         return row;
       });
@@ -634,7 +634,26 @@
         var td = document.createElement('td'); var v = r[c];
         // year-like columns (year, decade) render plain: "1,970" in a trust-the-numbers demo is fatal
         var plain = (DS.plainCols || []).indexOf(c) !== -1;
-        td.textContent = (typeof v === 'number') ? (plain ? String(v) : v.toLocaleString()) : (v == null ? '' : String(v));
+        if (v && v._nested) {
+          // nested mini-table, like Malloy's own renderer: the nest's columns become real columns
+          var nt = el('table', 'nested-table'), nth = document.createElement('thead'), nhr = document.createElement('tr');
+          v.columns.forEach(function (nc) { var th = document.createElement('th'); th.textContent = nc; nhr.appendChild(th); });
+          nth.appendChild(nhr); nt.appendChild(nth);
+          var ntb = document.createElement('tbody');
+          v.rows.forEach(function (nr) {
+            var ntr = document.createElement('tr');
+            v.columns.forEach(function (nc) {
+              var ntd = document.createElement('td'); var nv = nr[nc];
+              var nplain = (DS.plainCols || []).indexOf(nc) !== -1;
+              ntd.textContent = (typeof nv === 'number') ? (nplain ? String(nv) : nv.toLocaleString()) : (nv == null ? '' : String(nv));
+              ntr.appendChild(ntd);
+            });
+            ntb.appendChild(ntr);
+          });
+          nt.appendChild(ntb); td.appendChild(nt); td.className = 'has-nested';
+        } else {
+          td.textContent = (typeof v === 'number') ? (plain ? String(v) : v.toLocaleString()) : (v == null ? '' : String(v));
+        }
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
