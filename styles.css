@@ -1133,6 +1133,8 @@ body.theme-dark .hero h1::after { content: "\258C"; margin-left: .12em; color: #
 @keyframes yo-caret { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { body.theme-dark .hero h1::after { animation: none; } }
 body.theme-dark .steps li { background: #12151b; border-color: #262b35; }
+body.theme-dark section#how { background: radial-gradient(52rem 30rem at 88% 0%, rgba(232,163,61,.055), transparent 62%); }
+body.theme-dark section#features { background: radial-gradient(56rem 34rem at 10% 100%, rgba(24,135,166,.07), transparent 65%), radial-gradient(40rem 26rem at 92% 20%, rgba(232,163,61,.04), transparent 60%); }
 body.theme-dark .cta-band { background: #12151b; border: 1px solid #262b35; border-radius: 18px; }
 body.theme-dark .cta-band h2 { color: #e8eaed; }
 body.theme-dark .cta-band p { color: #9aa4af; }
