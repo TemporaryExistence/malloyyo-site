@@ -100,12 +100,14 @@
     <p class="section-sub">Pick a dataset and click a ★ question: the question becomes a Malloy query composed against the model, the query compiles to SQL, and your answer comes back, live in this page. Then edit anything. That loop is the whole product.</p>
     <div id="sandbox-app" class="sandbox">
       <noscript>
-        <pre class="code"><code>run: flights -&gt; {
-  group_by: carrier
-  aggregate: flight_count is count()
-  order_by: flight_count desc
+        <pre class="code"><code>run: recalls -&gt; {
+  group_by: manufacturer
+  aggregate:
+    campaigns is count()
+    vehicles is sum(vehicles_affected)
+  order_by: vehicles desc
 }</code></pre>
-        <p class="sandbox-note">This live demo needs JavaScript. You can also <a href="#sandbox">get started in VS Code</a> to run Malloy against your own data.</p>
+        <p class="sandbox-note">This live demo needs JavaScript. Without it, you can still run the same queries against your own data: <a href="https://github.com/malloydata/malloyyo">Malloyyo on GitHub</a> · <a href="https://docs.malloydata.dev/documentation">Malloy documentation</a>.</p>
       </noscript>
     </div>
   </div>
@@ -126,15 +128,11 @@
 <section id="recipes" class="wrap recipes-section">
   <h2>Public datasets</h2>
   <p class="section-sub">The same public dataset cards the live app serves, with their real example questions. Every one of these runs in the sandbox above; the code below each card is the Malloy the question compiles from.</p>
-  <div class="recipes-tools">
-    <input class="recipes-search" type="search" placeholder="Search recipes (e.g. join, nest, filter)…" aria-label="Search recipes" autocomplete="off">
-    <span class="recipes-count" aria-live="polite"></span>
-  </div>
   <div class="recipes-grid">
     
-    <article class="recipe-card" data-title="auto_recalls" data-tags="NHTSA recalls vehicles safety public" data-blurb="Auto recalls from the NHTSA, analyzed by component category and recall trend over time. ★ Which manufacturers have recalled the most vehicles in total? ★ The largest Do Not Drive recalls, and what fraction of owners actually got the fix? ★ Porsche recalls grouped by subject.">
+    <article class="recipe-card" data-title="auto_recalls" data-tags="NHTSA recalls vehicles safety public" data-blurb="Auto recalls from the NHTSA, analyzed by component category and recall trends over time.">
       <h3>auto_recalls</h3>
-      <p>Auto recalls from the NHTSA, analyzed by component category and recall trend over time. ★ Which manufacturers have recalled the most vehicles in total? ★ The largest Do Not Drive recalls, and what fraction of owners actually got the fix? ★ Porsche recalls grouped by subject.</p>
+      <p>Auto recalls from the NHTSA, analyzed by component category and recall trends over time. Data source: <a href="https://www.nhtsa.gov/recalls" rel="noopener" target="_blank">nhtsa.gov/recalls</a>. ★ Which manufacturers have recalled the most vehicles in total (by number of vehicles affected)? ★ Which component categories account for the most recalls and affected vehicles? ★ Recall counts by year since 2000. ★ The largest Do Not Drive recalls by vehicles affected, and what fraction of owners actually got the fix (completion rate)? ★ Porsche recalls grouped by subject.</p>
       <pre class="code"><code>run: recalls -&gt; {
   group_by: manufacturer
   aggregate:
@@ -145,9 +143,9 @@
       <p class="recipe-tags">NHTSA recalls vehicles safety public</p>
     </article>
     
-    <article class="recipe-card" data-title="baby_names" data-tags="SSA names decades states public" data-blurb="Baby names from the Social Security Administration. ★ Top names in each decade. ★ Which names from the 1960s were most over-represented in Louisiana compared to their national popularity? ★ Tell me about the name Kyle: popularity over time, gender breakdown, peak years, top states.">
+    <article class="recipe-card" data-title="baby_names" data-tags="SSA names decades states public" data-blurb="Baby names from the Social Security Administration.">
       <h3>baby_names</h3>
-      <p>Baby names from the Social Security Administration. ★ Top names in each decade. ★ Which names from the 1960s were most over-represented in Louisiana compared to their national popularity? ★ Tell me about the name Kyle: popularity over time, gender breakdown, peak years, top states.</p>
+      <p>Baby names from the Social Security Administration. ★ Top names in each decade. ★ Find female names that were popular in southern states in the 1920s but are rarely used today. ★ Which names from the 1960s were most over-represented in Louisiana compared to their national popularity? ★ Which names were most overrepresented in the 1950s relative to their share across all years? ★ Tell me about the name Kyle: popularity over time, gender breakdown, peak years, top states.</p>
       <pre class="code"><code>run: names -&gt; {
   group_by: decade
   nest: top_names is {
@@ -172,7 +170,6 @@
     </article>
     
   </div>
-  <p class="recipes-empty" hidden>No recipes match that search.</p>
 </section>
 
 
@@ -272,7 +269,7 @@
       </div>
     </div>
     <div class="wrap foot-legal">
-      <p class="muted">&copy; <span id="year"></span> Malloyyo. All rights reserved.</p>
+      <p class="muted">&copy; <span id="year"></span> Malloyyo · Open source under the MIT license · From the Malloy project.</p>
       
     </div>
   </footer>
@@ -289,6 +286,6 @@
       n.addEventListener('click', function (e) { if (e.target.tagName === 'A') { n.classList.remove('open'); t.setAttribute('aria-expanded', 'false'); } });
     })();
   </script>
-  <script src="assets/data.js" defer></script><script src="assets/motion.js" defer></script>
+  <script src="assets/data-recalls.js" defer></script><script src="assets/motion.js" defer></script>
 </body>
 </html>
