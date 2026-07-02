@@ -49,28 +49,37 @@
   }
 
   function buildOrders() {
+    // enriched to carry the REAL example questions from the live app's order_items card
+    // (brands per category, states, returns, customers) — still a deterministic synthetic corpus.
     var CATALOG = [
-      ['Apparel', [['Trail Jacket', 129], ['Merino Tee', 45], ['Storm Pants', 98], ['Rain Shell', 159], ['Fleece Pullover', 74], ['Hiking Socks 3pk', 22], ['Sun Hoodie', 58]]],
-      ['Electronics', [['Dive Computer', 449], ['Headlamp', 59], ['Action Camera', 329], ['GPS Watch', 379], ['Solar Charger', 89], ['Two-Way Radio', 129]]],
-      ['Home', [['French Press', 39], ['Chef Knife', 89], ['Wool Blanket', 119], ['Cast Iron Skillet', 49], ['Espresso Grinder', 189], ['Cutting Board', 34]]],
-      ['Outdoors', [['Tent 2P', 259], ['Sleeping Bag', 149], ['Trekking Poles', 79], ['Water Filter', 45], ['Camp Stove', 99], ['Bear Canister', 84], ['Climbing Harness', 69]]],
-      ['Beauty', [['Sunscreen SPF50', 18], ['Face Serum', 42], ['Lip Balm 4pk', 12], ['After-Sun Lotion', 16]]]
+      ['Apparel', ['Summit Thread', 'North Bay Co', 'Fieldline'], [['Trail Jacket', 129], ['Merino Tee', 45], ['Storm Pants', 98], ['Rain Shell', 159], ['Fleece Pullover', 74], ['Hiking Socks 3pk', 22], ['Sun Hoodie', 58]]],
+      ['Electronics', ['Deepwatch', 'Voltaic Labs', 'Trailtronic'], [['Dive Computer', 449], ['Headlamp', 59], ['Action Camera', 329], ['GPS Watch', 379], ['Solar Charger', 89], ['Two-Way Radio', 129]]],
+      ['Home', ['Hearthstone Goods', 'Copperline', 'Kettle & Oak'], [['French Press', 39], ['Chef Knife', 89], ['Wool Blanket', 119], ['Cast Iron Skillet', 49], ['Espresso Grinder', 189], ['Cutting Board', 34]]],
+      ['Outdoors', ['Basecamp Supply', 'Ridgeform', 'Cairn Works'], [['Tent 2P', 259], ['Sleeping Bag', 149], ['Trekking Poles', 79], ['Water Filter', 45], ['Camp Stove', 99], ['Bear Canister', 84], ['Climbing Harness', 69]]],
+      ['Beauty', ['Solara', 'Tidepool Botanics'], [['Sunscreen SPF50', 18], ['Face Serum', 42], ['Lip Balm 4pk', 12], ['After-Sun Lotion', 16]]]
     ];
-    var REGIONS = [['West', 34], ['South', 28], ['Midwest', 20], ['Northeast', 18]];
-    var regionPool = [];
-    REGIONS.forEach(function (r) { for (var i = 0; i < r[1]; i++) regionPool.push(r[0]); });
+    var STATES = [['California', 14], ['Texas', 11], ['Florida', 9], ['New York', 8], ['Washington', 7], ['Colorado', 7], ['Illinois', 6], ['Ohio', 6], ['Georgia', 6], ['Oregon', 5], ['Arizona', 5], ['Michigan', 5], ['North Carolina', 5], ['Pennsylvania', 4], ['Utah', 2]];
+    var statePool = [];
+    STATES.forEach(function (s) { for (var i = 0; i < s[1]; i++) statePool.push(s[0]); });
     var rnd = makeRnd(8675309), rows = [];
     for (var n = 0; n < 2200; n++) {
       var cat = CATALOG[Math.floor(rnd() * CATALOG.length)];
-      var prod = cat[1][Math.floor(rnd() * cat[1].length)];
+      var prod = cat[2][Math.floor(rnd() * cat[2].length)];
+      var brand = cat[1][Math.floor(rnd() * cat[1].length)];
       // seasonality: outdoors peaks in summer, everything lifts in Nov/Dec
       var m = 1 + Math.floor(rnd() * 12);
       if (cat[0] === 'Outdoors' && rnd() < 0.35) m = 5 + Math.floor(rnd() * 4);
       if (rnd() < 0.18) m = 11 + Math.floor(rnd() * 2);
       var qty = 1 + Math.floor(rnd() * 3);
+      var total = prod[1] * qty;
       rows.push({
-        product_category: cat[0], product: prod[0], region: regionPool[Math.floor(rnd() * regionPool.length)],
-        sale_price: prod[1], quantity: qty, line_total: prod[1] * qty, order_month: m
+        product_category: cat[0], product: prod[0], brand: brand,
+        customer: 'customer_' + (1 + Math.floor(rnd() * 320)),
+        state: statePool[Math.floor(rnd() * statePool.length)],
+        sale_price: prod[1], quantity: qty, line_total: total,
+        cost: Math.round(total * (0.45 + rnd() * 0.25)),
+        returned: rnd() < 0.08 ? 1 : 0,
+        order_month: m
       });
     }
     return rows;
@@ -139,23 +148,32 @@
     {
       key: 'order_items', source: 'order_items', label: 'order_items',
       blurb: 'Ecommerce order lines from the example models set (synthetic sample).',
-      cols: ['product_category', 'product', 'region', 'sale_price', 'quantity', 'line_total', 'order_month'],
+      cols: ['product_category', 'product', 'brand', 'customer', 'state', 'sale_price', 'quantity', 'line_total', 'cost', 'returned', 'order_month'],
       colAlias: { category: 'product_category', month: 'order_month', revenue: 'line_total' },
-      note: 'Synthetic demo rows (deterministic; schema matches the live example_models set).',
+      plainCols: ['order_month'],
+      note: 'Synthetic demo rows (deterministic; schema matches the live example_models set). The ★ questions are the real ones from the live card.',
       build: buildOrders,
       examples: [
-        { id: 'o-rev', ask: 'Where does the revenue come from, by category?', label: 'Revenue by category', blurb: 'The basic pitch question: where does the money come from?',
-          teach: 'line_total (price times quantity) sums per category; the name revenue is defined right where it is used.',
-          try: 'Add  avg_ticket is avg(sale_price)  to the aggregate list.',
-          malloy: "run: order_items -> {\n  group_by: product_category\n  aggregate: revenue is sum(line_total)\n  order_by: revenue desc\n}" },
-        { id: 'o-region', ask: 'What does each region buy the most of?', label: 'Regional mix', blurb: 'A nested breakdown: each region\'s top categories, one query.',
+        { id: 'o-brands', ask: 'What are the top brands within each product category, ranked by category total sales?', label: 'Top brands per category', blurb: 'The card\'s lead question: a ranked brand table inside every category.',
           teach: 'The same nest: shape as baby_names. The pattern transfers across datasets because the language is the same.',
-          try: 'Nest by product instead of product_category.',
-          malloy: "run: order_items -> {\n  group_by: region\n  aggregate: revenue is sum(line_total)\n  nest: top_categories is {\n    group_by: product_category\n    aggregate: revenue is sum(line_total)\n    order_by: revenue desc\n    limit: 2\n  }\n  order_by: revenue desc\n}" },
+          try: 'Change limit: 3 to 1 for just each category\'s champion brand.',
+          malloy: "run: order_items -> {\n  group_by: product_category\n  aggregate: category_sales is sum(line_total)\n  nest: top_brands is {\n    group_by: brand\n    aggregate: sales is sum(line_total)\n    order_by: sales desc\n    limit: 3\n  }\n  order_by: category_sales desc\n}" },
+        { id: 'o-trend', ask: 'Monthly sales trend.', label: 'Monthly trend', blurb: 'Straight from the card: sales by month, in order.',
+          teach: 'order_by on the grouping column gives a time series; months render plain (no comma in 11).',
+          try: 'Add  items is count()  to see volume next to revenue.',
+          malloy: "run: order_items -> {\n  group_by: order_month\n  aggregate: sales is sum(line_total)\n  order_by: order_month asc\n}" },
+        { id: 'o-states', ask: 'Top 10 states by total sales.', label: 'Top 10 states', blurb: 'From the card: where the sales actually are.',
+          teach: 'group_by + one aggregate + limit is most of everyday analytics.',
+          try: 'Swap sum(line_total) for count() to rank by order volume instead.',
+          malloy: "run: order_items -> {\n  group_by: state\n  aggregate: sales is sum(line_total)\n  order_by: sales desc\n  limit: 10\n}" },
+        { id: 'o-returns', ask: 'Which customers return a lot and what did they buy?', label: 'Returners', blurb: 'From the card: filtered aggregates + a nest, one readable block.',
+          teach: 'returns counts only returned rows via the inline { where: } filter; the nest shows what those customers bought.',
+          try: 'Raise limit: 8 or nest by brand instead of category.',
+          malloy: "run: order_items -> {\n  group_by: customer\n  aggregate:\n    orders is count()\n    returns is count() { where: returned = 1 }\n  nest: bought is {\n    group_by: product_category\n    aggregate: items is count()\n    order_by: items desc\n    limit: 2\n  }\n  order_by: returns desc\n  limit: 8\n}" },
         { id: 'o-free', ask: 'Which categories spike in the holiday season?', label: 'Your turn', free: true,
-          blurb: 'Columns: product_category, product, region, sale_price, quantity, line_total, order_month.',
+          blurb: 'Columns: product_category, product, brand, customer, state, sale_price, quantity, line_total, cost, returned, order_month.',
           teach: 'Filtered aggregates work here too.',
-          try: "holiday is sum(sale_price) { where: order_month >= 11 }  next to a plain revenue sum.",
+          try: "holiday is sum(line_total) { where: order_month >= 11 }  next to a plain revenue sum.",
           malloy: "run: order_items -> {\n  group_by: product_category\n  aggregate:\n    revenue is sum(line_total)\n    holiday is sum(line_total) { where: order_month >= 11 }\n  order_by: revenue desc\n}" }
       ]
     }
