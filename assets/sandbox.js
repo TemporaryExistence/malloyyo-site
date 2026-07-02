@@ -360,23 +360,54 @@
       return 'SELECT ' + spec.select.join(', ') + '\nFROM ' + DS.source +
         (spec.filters.length ? '\nWHERE ' + fmtFilters(spec.filters) : '') + (spec.limit ? '\nLIMIT ' + spec.limit : '');
     }
-    var sel = spec.groupBy.concat(spec.aggregates.map(aggSQL));
-    var lines = ['SELECT ' + sel.join(',\n       ')];
-    if (spec.nest) {
-      var ns = spec.nest.spec, na = ns.aggregates[0];
-      lines[0] = lines[0] + ',';
-      lines.push('       LIST(STRUCT_PACK(        -- nested: ' + spec.nest.name);
-      ns.groupBy.forEach(function (c) { lines.push('         ' + c + ','); });
-      lines.push('         ' + (na ? na.name + ' := ' + (na.fn === 'count' ? 'cnt' : na.fn + '_' + na.col) : 'cnt'));
-      lines.push('       )' + (ns.orderBy ? ' ORDER BY ' + (na ? na.name : 'cnt') + ' ' + ns.orderBy.dir.toUpperCase() : '') +
-        ')' + (ns.limit ? '[1:' + ns.limit + ']' : '') + ' AS ' + spec.nest.name);
+    if (!spec.nest) {
+      var sel = spec.groupBy.concat(spec.aggregates.map(aggSQL));
+      var lines = ['SELECT ' + sel.join(',\n       ')];
+      lines.push('FROM ' + DS.source);
+      if (spec.filters.length) lines.push('WHERE ' + fmtFilters(spec.filters));
+      if (spec.groupBy.length) lines.push('GROUP BY ' + spec.groupBy.join(', '));
+      if (spec.orderBy) lines.push('ORDER BY ' + spec.orderBy.name + ' ' + spec.orderBy.dir.toUpperCase());
+      if (spec.limit) lines.push('LIMIT ' + spec.limit);
+      return lines.join('\n');
     }
-    lines.push('FROM ' + DS.source);
-    if (spec.filters.length) lines.push('WHERE ' + fmtFilters(spec.filters));
-    if (spec.groupBy.length) lines.push('GROUP BY ' + spec.groupBy.join(', '));
-    if (spec.orderBy) lines.push('ORDER BY ' + spec.orderBy.name + ' ' + spec.orderBy.dir.toUpperCase());
-    if (spec.limit) lines.push('LIMIT ' + spec.limit);
-    return lines.join('\n');
+    // Nested query: real DuckDB shape — aggregate to (outer groups × nested groups) in a subquery,
+    // then LIST(STRUCT_PACK(...)) the nested columns per outer group. Every column reference is real.
+    var ns = spec.nest.spec;
+    var innerAggs = ns.aggregates.map(aggSQL);
+    var outerSel = [];
+    spec.aggregates.forEach(function (a) {
+      if (!a.filters && a.fn === 'count' && !a.distinct) {
+        innerAggs.push('COUNT(*) AS _rows'); outerSel.push('SUM(_rows) AS ' + a.name);
+      } else if (!a.filters && a.fn === 'sum') {
+        innerAggs.push('SUM(' + a.col + ') AS _sum_' + a.col); outerSel.push('SUM(_sum_' + a.col + ') AS ' + a.name);
+      } else if (!a.filters && (a.fn === 'min' || a.fn === 'max')) {
+        var nm = '_' + a.fn + '_' + a.col;
+        innerAggs.push(a.fn.toUpperCase() + '(' + a.col + ') AS ' + nm); outerSel.push(a.fn.toUpperCase() + '(' + nm + ') AS ' + a.name);
+      } else if (!a.filters && a.fn === 'avg') {
+        innerAggs.push('SUM(' + a.col + ') AS _sum_' + a.col); innerAggs.push('COUNT(' + a.col + ') AS _n_' + a.col);
+        outerSel.push('SUM(_sum_' + a.col + ') / SUM(_n_' + a.col + ') AS ' + a.name);
+      } else {
+        outerSel.push(aggSQL(a) + ' -- abridged: computed over raw rows');
+      }
+    });
+    innerAggs = innerAggs.filter(function (x, i) { return innerAggs.indexOf(x) === i; });
+    var innerCols = spec.groupBy.concat(ns.groupBy);
+    var packCols = ns.groupBy.concat(ns.aggregates.map(function (a) { return a.name; }));
+    var listExpr = 'LIST(STRUCT_PACK(' + packCols.join(', ') + ')' +
+      (ns.orderBy ? ' ORDER BY ' + ns.orderBy.name + ' ' + ns.orderBy.dir.toUpperCase() : '') + ')' +
+      (ns.limit ? '[1:' + ns.limit + ']' : '') + ' AS ' + spec.nest.name;
+    var out = ['SELECT ' + spec.groupBy.concat(outerSel).join(',\n       ') + (spec.groupBy.length || outerSel.length ? ',' : '')];
+    out.push('       ' + listExpr + '  -- nested: ' + spec.nest.name);
+    out.push('FROM (');
+    out.push('  SELECT ' + innerCols.concat(innerAggs).join(', '));
+    out.push('  FROM ' + DS.source);
+    if (spec.filters.length) out.push('  WHERE ' + fmtFilters(spec.filters));
+    out.push('  GROUP BY ' + innerCols.join(', '));
+    out.push(')');
+    if (spec.groupBy.length) out.push('GROUP BY ' + spec.groupBy.join(', '));
+    if (spec.orderBy) out.push('ORDER BY ' + spec.orderBy.name + ' ' + spec.orderBy.dir.toUpperCase());
+    if (spec.limit) out.push('LIMIT ' + spec.limit);
+    return out.join('\n');
   }
 
   // ===== UI =================================================================================================
@@ -570,7 +601,7 @@
       errBox.innerHTML = '<strong>Could not compile.</strong> ' + escapeHtml(e.friendly ? e.message : 'unexpected error, check the query shape.');
       return;
     }
-    if (spec.nest) { sqlNote.hidden = false; sqlNote.textContent = 'Nested SQL is abridged for readability, Malloy generates the full warehouse-specific query.'; }
+    if (spec.nest) { sqlNote.hidden = false; sqlNote.textContent = 'Shown as the equivalent DuckDB query; Malloy generates the full SQL in your warehouse’s own dialect.'; }
     showSql(sql, result, instant);
   }
 
