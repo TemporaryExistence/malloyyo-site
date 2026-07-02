@@ -130,10 +130,31 @@
 
 <section id="recipes" class="wrap recipes-section">
   <h2>Public datasets</h2>
-  <p class="section-sub">The same public dataset cards the live app serves, with their real example questions. Every one of these runs in the sandbox above; the code below each card is the Malloy the question compiles from.</p>
-  <div class="recipes-grid">
-    
-    <article class="recipe-card" data-title="auto_recalls" data-tags="NHTSA recalls vehicles safety public" data-blurb="Auto recalls from the NHTSA, analyzed by component category and recall trends over time.">
+  <p class="section-sub">The live app's public datasets, grouped exactly as it serves them, with their real example questions. The example_models sources run right here in the sandbox; the code under each card is the Malloy its lead question compiles from.</p>
+
+  <div class="ds-group">
+    <div class="ds-group-head"><span class="ds-group-name">example_models</span><span class="pill-public">public</span></div>
+    <div class="recipes-grid">
+
+    <article class="recipe-card" data-title="order_items" data-tags="ecommerce orders brands returns public">
+      <h3>order_items</h3>
+      <p>Order line items from the example models set (ecommerce sample). ★ What are the top brands within each product category, ranked by category total sales? ★ Monthly sales trend. ★ Top 5 brands by total sales, with percent of sales, gross margin, and item count. ★ Which customers return a lot and what did they buy? ★ Among customers with at least 5 purchases, who has the highest return rate? ★ Which product categories have the best gross margin percentage vs raw sales volume? ★ Top 10 states by total sales. ★ (Chart) All product categories in the ecommerce store by order count.</p>
+      <pre class="code"><code>run: order_items -&gt; {
+  group_by: product_category
+  aggregate: category_sales is sum(line_total)
+  nest: top_brands is {
+    group_by: brand
+    aggregate: sales is sum(line_total)
+    order_by: sales desc
+    limit: 3
+  }
+  order_by: category_sales desc
+}</code></pre>
+      <p class="recipe-explore">Explore with: <a class="explore-chip" href="#sandbox" data-explore-ds="order_items">the live sandbox</a><span class="explore-note">on the live app: Claude · ltool</span></p>
+      <p class="recipe-tags">ecommerce orders brands returns public</p>
+    </article>
+
+    <article class="recipe-card" data-title="auto_recalls" data-tags="NHTSA recalls vehicles safety public">
       <h3>auto_recalls</h3>
       <p>Auto recalls from the NHTSA, analyzed by component category and recall trends over time. Data source: <a href="https://www.nhtsa.gov/recalls" rel="noopener" target="_blank">nhtsa.gov/recalls</a>. ★ Which manufacturers have recalled the most vehicles in total (by number of vehicles affected)? ★ Which component categories account for the most recalls and affected vehicles? ★ Recall counts by year since 2000. ★ The largest Do Not Drive recalls by vehicles affected, and what fraction of owners actually got the fix (completion rate)? ★ Porsche recalls grouped by subject.</p>
       <pre class="code"><code>run: recalls -&gt; {
@@ -146,10 +167,10 @@
       <p class="recipe-explore">Explore with: <a class="explore-chip" href="#sandbox" data-explore-ds="auto_recalls">the live sandbox</a><span class="explore-note">on the live app: Claude · ltool</span></p>
       <p class="recipe-tags">NHTSA recalls vehicles safety public</p>
     </article>
-    
-    <article class="recipe-card" data-title="baby_names" data-tags="SSA names decades states public" data-blurb="Baby names from the Social Security Administration.">
+
+    <article class="recipe-card" data-title="baby_names" data-tags="SSA names decades states public">
       <h3>baby_names</h3>
-      <p>Baby names from the Social Security Administration. ★ Top names in each decade. ★ Find female names that were popular in southern states in the 1920s but are rarely used today. ★ Which names from the 1960s were most over-represented in Louisiana compared to their national popularity? ★ Which names were most overrepresented in the 1950s relative to their share across all years? ★ Tell me about the name Kyle: popularity over time, gender breakdown, peak years, top states.</p>
+      <p>Baby names from the Social Security Administration. ★ Which names from the 1960s were most over-represented in Louisiana compared to their national popularity? ★ Which names were most overrepresented in the 1950s relative to their share across all years? ★ Top names in each decade. ★ Find female names that were popular in southern states in the 1920s but are rarely used today. ★ Tell me about the name Kyle: popularity over time, gender breakdown, peak years, and top states.</p>
       <pre class="code"><code>run: names -&gt; {
   group_by: decade
   nest: top_names is {
@@ -162,19 +183,25 @@
       <p class="recipe-explore">Explore with: <a class="explore-chip" href="#sandbox" data-explore-ds="baby_names">the live sandbox</a><span class="explore-note">on the live app: Claude · ltool</span></p>
       <p class="recipe-tags">SSA names decades states public</p>
     </article>
-    
-    <article class="recipe-card" data-title="order_items" data-tags="ecommerce orders example public" data-blurb="Order line items from the example models set. Ask it revenue, basket, and product questions the same way: in plain language, against measures the model defines once.">
-      <h3>order_items</h3>
-      <p>Order line items from the example models set. Ask it revenue, basket, and product questions the same way: in plain language, against measures the model defines once.</p>
-      <pre class="code"><code>run: order_items -&gt; {
-  group_by: product_category
-  aggregate: revenue is sum(sale_price)
-  order_by: revenue desc
-}</code></pre>
-      <p class="recipe-explore">Explore with: <a class="explore-chip" href="#sandbox" data-explore-ds="order_items">the live sandbox</a><span class="explore-note">on the live app: Claude · ltool</span></p>
-      <p class="recipe-tags">ecommerce orders example public</p>
+
+    </div>
+  </div>
+
+  <div class="ds-group">
+    <div class="ds-group-head"><span class="ds-group-name">movies</span><span class="pill-public">public</span></div>
+    <div class="recipes-grid recipes-grid-1">
+    <article class="recipe-card" data-title="movies" data-tags="movies genres directors IMDB public">
+      <h3>movies</h3>
+      <p>Movies with genres, directors, and IMDB votes and ratings. ★ Which genres most often pair with Comedy on the same title? ★ For each genre, how many titles exist and what's the average release year (which genres are newer vs older on average)? ★ Which directors have the most total IMDB votes across their films? ★ The 10 most-voted movies in the dataset, with their rating. ★ Top genre pairs with different genres by film count from movies in the 1930s. ★ Most popular (by vote count) 1950s Sci-Fi movies. ★ Most popular movies where the same person directed and acted, ranked by number of votes.</p>
+      <p class="recipe-explore">Explore with: <a class="explore-chip" href="https://malloyyo.vercel.app/" rel="noopener" target="_blank">the live app</a><span class="explore-note">Claude · ltool (this dataset is not bundled into the in-page sandbox)</span></p>
+      <p class="recipe-tags">movies genres directors IMDB public</p>
     </article>
-    
+    </div>
+  </div>
+
+  <div class="ds-group">
+    <div class="ds-group-head"><span class="ds-group-name">google_analytics</span><span class="pill-public">public</span></div>
+    <p class="ds-group-note">A public Google Analytics semantic model, served the same way. <a href="https://malloyyo.vercel.app/" rel="noopener" target="_blank">Explore it on the live app</a>.</p>
   </div>
 </section>
 
