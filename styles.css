@@ -1139,6 +1139,15 @@ body.theme-dark .nested-table th { font-size: .68rem; text-transform: none; colo
 body.theme-dark .nested-table td { font-size: .82rem; padding: .18rem .8rem .18rem 0; border-bottom: 1px solid #171b22; }
 body.theme-dark .nested-table tr:last-child td { border-bottom: 0; }
 body.theme-dark .nested-table th:last-child, body.theme-dark .nested-table td:last-child { text-align: right; padding-right: 0; }
+/* dataset groups — mirror the live app's grouped dataset browser */
+body.theme-dark .ds-group { border: 1px solid #262b35; border-radius: 12px; padding: 1rem 1.1rem 1.1rem; margin: 0 0 1.4rem; background: rgba(18, 21, 27, 0.45); }
+body.theme-dark .ds-group-head { display: flex; align-items: center; gap: .6rem; margin: 0 0 .9rem; }
+body.theme-dark .ds-group-name { font-family: var(--font-head); font-weight: 700; font-size: 1.02rem; color: #e8eaed; }
+body.theme-dark .pill-public { font-size: .68rem; padding: .1rem .55rem; border-radius: 999px; background: #16324a; color: #8ab4f8; }
+body.theme-dark .ds-group-note { margin: 0; font-size: .88rem; color: #9aa4af; }
+body.theme-dark .ds-group .recipes-grid { margin: 0; }
+body.theme-dark .recipes-grid-1 { grid-template-columns: 1fr; }
+body.theme-dark .recipes-grid-1 .recipe-card p { max-width: 68ch; }
 body.theme-dark .sandbox-pane { background: #12151b; border: 1px solid #262b35; }
 body.theme-dark .sandbox-editor { background: #0f151c; color: #e8eaed; border: 1px solid #262b35; }
 body.theme-dark .sandbox-tab { background: #12151b; color: #c7cdd4; border: 1px solid #262b35; }
