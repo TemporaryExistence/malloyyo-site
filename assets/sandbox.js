@@ -666,6 +666,14 @@
   function b64encode(s) { return btoa(unescape(encodeURIComponent(s))); }
   function b64decode(s) { return decodeURIComponent(escape(atob(s))); }
 
+  // dataset-card "Explore with: the live sandbox" chips — jump to the sandbox with that dataset selected
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('[data-explore-ds]') : null;
+    if (!a) return;
+    var hit = DATASETS.filter(function (d) { return d.key === a.getAttribute('data-explore-ds'); })[0];
+    if (hit) selectDataset(hit); // the anchor's own #sandbox navigation handles the scroll
+  });
+
   // boot: pick the target dataset (share link #d=<dataset>&q=<base64>, else the first), let
   // selectDataset lazy-load its data file, then honor any shared query once the rows are ready.
   (function boot() {
