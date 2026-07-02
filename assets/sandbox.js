@@ -5,9 +5,10 @@
  * computed from your input, not canned. Unsupported syntax fails with a friendly message; it never
  * fabricates output.
  *
- * DATA HONESTY: each bundled sample is SYNTHETIC data over the dataset's real schema (deterministic seed,
- * reproducible). The numbers are for demonstration only — the live Malloyyo serves real models to any MCP
- * client. The per-dataset caption says exactly this in the UI.
+ * DATA HONESTY: auto_recalls and baby_names run on REAL public data (assets/data.js — NHTSA recall flat
+ * files + SSA by-state baby names; sources, refresh date, and the sampling rule are in that file's header).
+ * order_items is a deterministic synthetic demo corpus over the example schema. The per-dataset caption
+ * says exactly which is which in the UI. The live Malloyyo serves real models to any MCP client.
  *
  * Example arcs are grounded in the REAL example questions shown on the live site's dataset cards
  * (captured 2026-07-02, CAPTURE.md).
@@ -28,90 +29,44 @@
   // ===== deterministic PRNG shared by the dataset builders ==================================================
   function makeRnd(seed) { var s = seed; return function () { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; }
 
-  // ===== dataset builders (synthetic rows, real schema, deterministic) =====================================
+  // ===== dataset builders ===================================================================================
+  // recalls + names are REAL public data (assets/data.js, built 2026-07-02 from the NHTSA recall flat files
+  // and the SSA by-state baby-names files — sources + sampling rule documented in that file's header).
   function buildRecalls() {
-    var MFRS = [['Ford', 14], ['General Motors', 13], ['Toyota', 11], ['Honda', 10], ['Stellantis', 10], ['Nissan', 8],
-      ['Hyundai', 7], ['Volkswagen', 6], ['BMW', 5], ['Mercedes-Benz', 5], ['Kia', 5], ['Tesla', 4], ['Subaru', 4], ['Porsche', 3], ['Volvo', 2]];
-    var COMPONENTS = [
-      ['Air Bags', ['Inflator may rupture', 'Airbag may not deploy']],
-      ['Electrical System', ['Wiring may short circuit', 'Software error disables safety feature']],
-      ['Fuel System', ['Fuel leak may cause fire', 'Fuel pump may fail']],
-      ['Brakes', ['Brake fluid leak', 'ABS module failure']],
-      ['Steering', ['Steering column may separate', 'Loss of power steering']],
-      ['Suspension', ['Control arm may fracture']],
-      ['Seat Belts', ['Buckle may unlatch in a crash']],
-      ['Powertrain', ['Transmission may shift to neutral', 'Engine stall risk']],
-      ['Structure', ['Frame corrosion']],
-      ['Backover Prevention', ['Rearview image may not display']]
-    ];
-    var weighted = [];
-    MFRS.forEach(function (m) { for (var i = 0; i < m[1]; i++) weighted.push(m[0]); });
-    var rnd = makeRnd(20260702), rows = [];
-    for (var n = 0; n < 700; n++) {
-      var mfr = weighted[Math.floor(rnd() * weighted.length)];
-      var comp = COMPONENTS[Math.floor(rnd() * COMPONENTS.length)];
-      var subject = comp[1][Math.floor(rnd() * comp[1].length)];
-      var year = 2026 - Math.floor(Math.pow(rnd(), 1.6) * 30);            // weighted toward recent years
-      var vehicles = Math.round(Math.pow(10, 3 + rnd() * 3.2));           // ~1k .. ~1.6M, long tail
-      rows.push({
-        manufacturer: mfr, component: comp[0], subject: subject, year: year,
-        vehicles_affected: vehicles, do_not_drive: rnd() < 0.025 ? 1 : 0,
-        completion_pct: 15 + Math.floor(rnd() * 80)
-      });
-    }
-    return rows;
+    return window.MALLOYYO_DATA.recalls.map(function (r) {
+      return { manufacturer: r[0], component: r[1], subject: r[2], year: r[3], vehicles_affected: r[4], do_not_drive: r[5], completion_pct: r[6] };
+    });
   }
 
   function buildNames() {
-    // [name, sex, peak decade, base size, southern lean]
-    var NAMES = [
-      ['Mary', 'F', 1940, 95, 1], ['John', 'M', 1930, 90, 0], ['Betty', 'F', 1930, 70, 1], ['William', 'M', 1930, 75, 0],
-      ['Dorothy', 'F', 1930, 65, 1], ['Charles', 'M', 1930, 60, 0], ['Robert', 'M', 1940, 88, 0], ['Barbara', 'F', 1940, 72, 0],
-      ['Richard', 'M', 1940, 66, 0], ['Willie', 'M', 1940, 40, 1], ['Linda', 'F', 1950, 92, 0], ['James', 'M', 1950, 94, 1],
-      ['Patricia', 'F', 1950, 78, 0], ['David', 'M', 1960, 85, 0], ['Susan', 'F', 1960, 74, 0], ['Karen', 'F', 1960, 70, 0],
-      ['Lisa', 'F', 1960, 76, 0], ['Michael', 'M', 1970, 96, 0], ['Jennifer', 'F', 1970, 90, 0], ['Brian', 'M', 1970, 62, 0],
-      ['Kevin', 'M', 1970, 58, 0], ['Amy', 'F', 1970, 60, 0], ['Amanda', 'F', 1980, 68, 0], ['Melissa', 'F', 1980, 64, 0],
-      ['Sarah', 'F', 1980, 72, 0], ['Joshua', 'M', 1980, 70, 0], ['Daniel', 'M', 1980, 68, 0], ['Jessica', 'F', 1990, 88, 0],
-      ['Kyle', 'M', 1990, 66, 0], ['Ashley', 'F', 1990, 80, 1], ['Matthew', 'M', 1990, 78, 0], ['Tyler', 'M', 1990, 62, 0],
-      ['Brandon', 'M', 1990, 60, 0], ['Madison', 'F', 2000, 70, 0], ['Ethan', 'M', 2000, 68, 0], ['Jacob', 'M', 2000, 74, 0],
-      ['Emily', 'F', 2000, 76, 0], ['Hannah', 'F', 2000, 64, 0], ['Emma', 'F', 2010, 82, 0], ['Liam', 'M', 2010, 80, 0],
-      ['Olivia', 'F', 2010, 78, 0], ['Noah', 'M', 2010, 76, 0], ['Sophia', 'F', 2010, 72, 0], ['Aiden', 'M', 2010, 58, 0]
-    ];
-    var STATES = [['CA', 12], ['TX', 10], ['NY', 10], ['FL', 8], ['LA', 4], ['IL', 7], ['OH', 6], ['GA', 5], ['PA', 7], ['NC', 5]];
-    var SOUTH = { TX: 1, FL: 1, LA: 1, GA: 1, NC: 1 };
-    var rnd = makeRnd(19620314), rows = [];
-    NAMES.forEach(function (nm) {
-      for (var d = 1930; d <= 2020; d += 10) {
-        var dist = Math.abs(d - nm[2]) / 10;
-        var decay = Math.max(0, 1 - dist * 0.34);                         // popularity fades away from the peak
-        if (decay <= 0.02) continue;
-        STATES.forEach(function (st) {
-          var southern = nm[4] && SOUTH[st[0]] ? (d <= 1970 ? 2.2 : 1.3) : 1;  // the LA/1960s story lives here
-          var births = Math.round(nm[3] * decay * st[1] * southern * (60 + rnd() * 80));
-          if (births < 400) return;
-          rows.push({ name: nm[0], sex: nm[1], decade: d, state: st[0], births: births });
-        });
-      }
+    return window.MALLOYYO_DATA.names.map(function (r) {
+      return { name: r[0], sex: r[1], decade: r[2], state: r[3], births: r[4] };
     });
-    return rows;
   }
 
   function buildOrders() {
     var CATALOG = [
-      ['Apparel', [['Trail Jacket', 129], ['Merino Tee', 45], ['Storm Pants', 98]]],
-      ['Electronics', [['Dive Computer', 449], ['Headlamp', 59], ['Action Camera', 329]]],
-      ['Home', [['French Press', 39], ['Chef Knife', 89], ['Wool Blanket', 119]]],
-      ['Outdoors', [['Tent 2P', 259], ['Sleeping Bag', 149], ['Trekking Poles', 79]]],
-      ['Beauty', [['Sunscreen SPF50', 18], ['Face Serum', 42]]]
+      ['Apparel', [['Trail Jacket', 129], ['Merino Tee', 45], ['Storm Pants', 98], ['Rain Shell', 159], ['Fleece Pullover', 74], ['Hiking Socks 3pk', 22], ['Sun Hoodie', 58]]],
+      ['Electronics', [['Dive Computer', 449], ['Headlamp', 59], ['Action Camera', 329], ['GPS Watch', 379], ['Solar Charger', 89], ['Two-Way Radio', 129]]],
+      ['Home', [['French Press', 39], ['Chef Knife', 89], ['Wool Blanket', 119], ['Cast Iron Skillet', 49], ['Espresso Grinder', 189], ['Cutting Board', 34]]],
+      ['Outdoors', [['Tent 2P', 259], ['Sleeping Bag', 149], ['Trekking Poles', 79], ['Water Filter', 45], ['Camp Stove', 99], ['Bear Canister', 84], ['Climbing Harness', 69]]],
+      ['Beauty', [['Sunscreen SPF50', 18], ['Face Serum', 42], ['Lip Balm 4pk', 12], ['After-Sun Lotion', 16]]]
     ];
-    var REGIONS = ['West', 'South', 'Midwest', 'Northeast'];
+    var REGIONS = [['West', 34], ['South', 28], ['Midwest', 20], ['Northeast', 18]];
+    var regionPool = [];
+    REGIONS.forEach(function (r) { for (var i = 0; i < r[1]; i++) regionPool.push(r[0]); });
     var rnd = makeRnd(8675309), rows = [];
-    for (var n = 0; n < 1400; n++) {
+    for (var n = 0; n < 2200; n++) {
       var cat = CATALOG[Math.floor(rnd() * CATALOG.length)];
       var prod = cat[1][Math.floor(rnd() * cat[1].length)];
+      // seasonality: outdoors peaks in summer, everything lifts in Nov/Dec
+      var m = 1 + Math.floor(rnd() * 12);
+      if (cat[0] === 'Outdoors' && rnd() < 0.35) m = 5 + Math.floor(rnd() * 4);
+      if (rnd() < 0.18) m = 11 + Math.floor(rnd() * 2);
+      var qty = 1 + Math.floor(rnd() * 3);
       rows.push({
-        product_category: cat[0], product: prod[0], region: REGIONS[Math.floor(rnd() * REGIONS.length)],
-        sale_price: prod[1], quantity: 1 + Math.floor(rnd() * 4), order_month: 1 + Math.floor(rnd() * 12)
+        product_category: cat[0], product: prod[0], region: regionPool[Math.floor(rnd() * regionPool.length)],
+        sale_price: prod[1], quantity: qty, line_total: prod[1] * qty, order_month: m
       });
     }
     return rows;
@@ -121,11 +76,11 @@
   var DATASETS = [
     {
       key: 'auto_recalls', source: 'recalls', label: 'auto_recalls',
-      blurb: 'Vehicle recall campaigns (real NHTSA schema, synthetic sample).',
+      blurb: 'Real NHTSA vehicle recall campaigns, 1996 to now.',
       cols: ['manufacturer', 'component', 'subject', 'year', 'vehicles_affected', 'do_not_drive', 'completion_pct'],
       colAlias: { maker: 'manufacturer', vehicles: 'vehicles_affected' },
       plainCols: ['year'],
-      note: 'The live dataset answers from real NHTSA data.',
+      note: 'Real NHTSA data: the largest campaigns per year, plus every Porsche and every do-not-drive campaign; completion rates from NHTSA quarterly reports where filed (aggregates ignore nulls, as in SQL).',
       build: buildRecalls,
       examples: [
         { id: 'r-mfr', ask: 'Which manufacturers have recalled the most vehicles in total?', label: 'By manufacturer', blurb: 'The card\'s first question: which manufacturers have recalled the most vehicles in total?',
@@ -136,10 +91,10 @@
           teach: 'The where: filter sits inside the query block, next to the logic it guards.',
           try: 'Change 2000 to 2015, or group by component instead of year.',
           malloy: "run: recalls -> {\n  group_by: year\n  aggregate: campaigns is count()\n  where: year >= 2000\n  order_by: year desc\n  limit: 12\n}" },
-        { id: 'r-dnd', ask: 'The largest Do Not Drive recalls, and what fraction of owners actually got the fix?', label: 'Do Not Drive', blurb: 'The severe ones: Do Not Drive campaigns, and what fraction of owners actually got the fix.',
-          teach: 'completion_pct is averaged per manufacturer; do_not_drive is a 0/1 flag, so the filter reads like a sentence.',
-          try: "Group by component instead, or add  where: year >= 2015.",
-          malloy: "run: recalls -> {\n  group_by: manufacturer\n  aggregate:\n    vehicles is sum(vehicles_affected)\n    fix_rate is avg(completion_pct)\n  where: do_not_drive = 1\n  order_by: vehicles desc\n}" },
+        { id: 'r-fix', ask: 'What fraction of recalled vehicles actually get fixed?', label: 'Completion rates', blurb: 'Real remedy rates from NHTSA quarterly reports: how much of each recall actually got fixed.',
+          teach: 'completion_pct is null where no quarterly report was filed; aggregates ignore nulls, exactly like SQL.',
+          try: "Rare but real:  where: do_not_drive = 1  shows the campaigns where the notice said stop driving.",
+          malloy: "run: recalls -> {\n  group_by: manufacturer\n  aggregate:\n    campaigns is count()\n    fix_rate is avg(completion_pct)\n  order_by: campaigns desc\n  limit: 8\n}" },
         { id: 'r-free', ask: 'Porsche recalls grouped by subject.', label: 'Your turn', free: true,
           blurb: 'Everything composes: group_by, aggregate (with { where: … }), where, nest, order_by, limit, select.',
           teach: 'Columns: manufacturer, component, subject, year, vehicles_affected, do_not_drive, completion_pct.',
@@ -149,11 +104,11 @@
     },
     {
       key: 'baby_names', source: 'names', label: 'baby_names',
-      blurb: 'US baby names by decade and state (real SSA schema, synthetic sample).',
+      blurb: 'Real SSA baby names by decade and state.',
       cols: ['name', 'sex', 'decade', 'state', 'births'],
       colAlias: {},
       plainCols: ['decade'],
-      note: 'The live dataset answers from real SSA data.',
+      note: 'Real SSA data: state files aggregated to decades for 12 states, top names per decade.',
       build: buildNames,
       examples: [
         { id: 'n-top', ask: 'Top names in each decade.', label: 'Top per decade', blurb: 'The card\'s first question, and Malloy\'s signature move: a small ranked table inside each decade.',
@@ -164,10 +119,10 @@
           teach: 'One filter, one grouping: the whole story of a name in five lines.',
           try: "Try your own name. Or group_by: state to see where Kyle peaked.",
           malloy: "run: names -> {\n  group_by: decade\n  aggregate: births is sum(births)\n  where: name = 'Kyle'\n  order_by: decade asc\n}" },
-        { id: 'n-la', ask: 'Which names from the 1960s were most over-represented in Louisiana?', label: 'Louisiana, 1960s', blurb: 'The card\'s over-representation question, using a FILTERED aggregate: Louisiana births next to national births, in one row.',
-          teach: 'sum(births) { where: state = \'LA\' } compiles to the CASE WHEN you would otherwise hand-build. Two measures, two scopes, one query.',
+        { id: 'n-la', ask: 'Which names from the 1960s were most over-represented in Louisiana?', label: 'Louisiana, 1960s', blurb: 'The card\'s over-representation question, using a FILTERED aggregate: Louisiana births next to the 12-state total, in one row.',
+          teach: 'sum(births) { where: state = \'LA\' } compiles to the CASE WHEN you would otherwise hand-build. Two measures, two scopes, one query. These are real SSA numbers.',
           try: 'Swap LA for GA, or 1960 for 1990.',
-          malloy: "run: names -> {\n  group_by: name\n  aggregate:\n    la_births is sum(births) { where: state = 'LA' }\n    national is sum(births)\n  where: decade = 1960\n  order_by: la_births desc\n  limit: 8\n}" },
+          malloy: "run: names -> {\n  group_by: name\n  aggregate:\n    la_births is sum(births) { where: state = 'LA' }\n    all_states is sum(births)\n  where: decade = 1960\n  order_by: la_births desc\n  limit: 8\n}" },
         { id: 'n-free', ask: 'How many distinct names appear in each decade?', label: 'Your turn', free: true,
           blurb: 'Columns: name, sex, decade, state, births. Compose anything.',
           teach: 'count(distinct name) per decade shows naming diversity rising.',
@@ -178,29 +133,27 @@
     {
       key: 'order_items', source: 'order_items', label: 'order_items',
       blurb: 'Ecommerce order lines from the example models set (synthetic sample).',
-      cols: ['product_category', 'product', 'region', 'sale_price', 'quantity', 'order_month'],
-      colAlias: { category: 'product_category', month: 'order_month' },
-      note: 'Matches the live example_models set.',
+      cols: ['product_category', 'product', 'region', 'sale_price', 'quantity', 'line_total', 'order_month'],
+      colAlias: { category: 'product_category', month: 'order_month', revenue: 'line_total' },
+      note: 'Synthetic demo rows (deterministic; schema matches the live example_models set).',
       build: buildOrders,
       examples: [
         { id: 'o-rev', ask: 'Where does the revenue come from, by category?', label: 'Revenue by category', blurb: 'The basic pitch question: where does the money come from?',
-          teach: 'sale_price sums per category; the name revenue is defined right where it is used.',
+          teach: 'line_total (price times quantity) sums per category; the name revenue is defined right where it is used.',
           try: 'Add  avg_ticket is avg(sale_price)  to the aggregate list.',
-          malloy: "run: order_items -> {\n  group_by: product_category\n  aggregate: revenue is sum(sale_price)\n  order_by: revenue desc\n}" },
+          malloy: "run: order_items -> {\n  group_by: product_category\n  aggregate: revenue is sum(line_total)\n  order_by: revenue desc\n}" },
         { id: 'o-region', ask: 'What does each region buy the most of?', label: 'Regional mix', blurb: 'A nested breakdown: each region\'s top categories, one query.',
           teach: 'The same nest: shape as baby_names. The pattern transfers across datasets because the language is the same.',
           try: 'Nest by product instead of product_category.',
-          malloy: "run: order_items -> {\n  group_by: region\n  aggregate: revenue is sum(sale_price)\n  nest: top_categories is {\n    group_by: product_category\n    aggregate: revenue is sum(sale_price)\n    order_by: revenue desc\n    limit: 2\n  }\n  order_by: revenue desc\n}" },
+          malloy: "run: order_items -> {\n  group_by: region\n  aggregate: revenue is sum(line_total)\n  nest: top_categories is {\n    group_by: product_category\n    aggregate: revenue is sum(line_total)\n    order_by: revenue desc\n    limit: 2\n  }\n  order_by: revenue desc\n}" },
         { id: 'o-free', ask: 'Which categories spike in the holiday season?', label: 'Your turn', free: true,
-          blurb: 'Columns: product_category, product, region, sale_price, quantity, order_month.',
+          blurb: 'Columns: product_category, product, region, sale_price, quantity, line_total, order_month.',
           teach: 'Filtered aggregates work here too.',
           try: "holiday is sum(sale_price) { where: order_month >= 11 }  next to a plain revenue sum.",
-          malloy: "run: order_items -> {\n  group_by: product_category\n  aggregate:\n    revenue is sum(sale_price)\n    holiday is sum(sale_price) { where: order_month >= 11 }\n  order_by: revenue desc\n}" }
+          malloy: "run: order_items -> {\n  group_by: product_category\n  aggregate:\n    revenue is sum(line_total)\n    holiday is sum(line_total) { where: order_month >= 11 }\n  order_by: revenue desc\n}" }
       ]
     }
   ];
-  DATASETS.forEach(function (d) { d.rows = d.build(); });
-
   var DS = DATASETS[0];   // active dataset (switched by the dataset tabs)
 
   // ===== Malloy subset parser (identical engine; column/source resolution is per-dataset) ===================
@@ -322,10 +275,17 @@
   function computeAgg(rows, a) {
     if (a.filters) rows = applyFilters(rows, a.filters);
     if (a.fn === 'count') {
-      if (a.distinct && a.col) { var set = {}; rows.forEach(function (r) { set[r[a.col]] = 1; }); return Object.keys(set).length; }
+      if (a.distinct && a.col) {
+        var set = {};
+        rows.forEach(function (r) { var v = r[a.col]; if (v !== null && v !== undefined && v !== '') set[v] = 1; });
+        return Object.keys(set).length;
+      }
       return rows.length;
     }
-    var nums = rows.map(function (r) { return Number(r[a.col]); });
+    // aggregates ignore nulls, exactly like SQL (real completion_pct is null where no report was filed)
+    var nums = rows.map(function (r) { return r[a.col]; })
+      .filter(function (v) { return v !== null && v !== undefined && v !== ''; })
+      .map(Number).filter(isFinite);
     if (!nums.length) return 0;
     if (a.fn === 'sum') return nums.reduce(function (x, y) { return x + y; }, 0);
     if (a.fn === 'avg') return Math.round(nums.reduce(function (x, y) { return x + y; }, 0) / nums.length);
@@ -514,7 +474,7 @@
       d.cols.map(function (c) { return '<code>' + c + '</code>'; }).join(' ') +
       ' · <code>count()</code> <code>sum()</code> <code>avg()</code> <code>min()</code> <code>max()</code> <code>count(distinct …)</code>' +
       ' · operators <code>group_by</code> <code>aggregate</code> <code>where</code> <code>fn() { where: … }</code> <code>nest</code> <code>order_by</code> <code>limit</code> <code>select</code>';
-    caption.innerHTML = 'Runs on a bundled ' + d.rows.length.toLocaleString() + '-row deterministic sample (real schema, synthetic rows), right in your browser. ' +
+    caption.innerHTML = 'Runs on a bundled ' + d.rows.length.toLocaleString() + '-row sample, right in your browser. ' +
       escapeHtml(d.note) + ' The live Malloyyo serves real models to any MCP client.';
     if (!keepQuery) selectExample(d.examples[0], initial);
   }
@@ -533,7 +493,11 @@
     });
     runQuery(initial);
   }
-  function compile() { runBtn.classList.add('is-busy'); runQuery(false); }
+  function setBusy(b) {
+    runBtn.classList.toggle('is-busy', b);
+    runBtn.innerHTML = b ? 'Running\u2026' : 'Compile to SQL <span aria-hidden="true">\u25b8</span>';
+  }
+  function compile() { setBusy(true); runQuery(false); }
 
   function runQuery(instant) {
     if (typeTimer) { clearInterval(typeTimer); typeTimer = null; }
@@ -544,7 +508,7 @@
       sql = toSQL(spec);
       result = runSpec(spec, DS.rows);
     } catch (e) {
-      runBtn.classList.remove('is-busy');
+      setBusy(false);
       sqlCode.textContent = ''; resultsWrap.innerHTML = '';
       errBox.hidden = false;
       errBox.innerHTML = '<strong>Could not compile.</strong> ' + escapeHtml(e.friendly ? e.message : 'unexpected error, check the query shape.');
@@ -556,12 +520,12 @@
 
   function showSql(sql, result, instant) {
     resultsWrap.innerHTML = '';
-    if (instant || reduceMotion) { sqlCode.innerHTML = highlightSQL(sql); runBtn.classList.remove('is-busy'); renderResults(result); return; }
+    if (instant || reduceMotion) { sqlCode.innerHTML = highlightSQL(sql); setBusy(false); renderResults(result); return; }
     sqlCode.textContent = '';
     var i = 0, step = Math.max(1, Math.round(sql.length / 80));
     typeTimer = setInterval(function () {
       i += step; sqlCode.textContent = sql.slice(0, i);
-      if (i >= sql.length) { clearInterval(typeTimer); typeTimer = null; sqlCode.innerHTML = highlightSQL(sql); runBtn.classList.remove('is-busy'); renderResults(result); }
+      if (i >= sql.length) { clearInterval(typeTimer); typeTimer = null; sqlCode.innerHTML = highlightSQL(sql); setBusy(false); renderResults(result); }
     }, 12);
   }
 
@@ -615,8 +579,18 @@
   function b64encode(s) { return btoa(unescape(encodeURIComponent(s))); }
   function b64decode(s) { return decodeURIComponent(escape(atob(s))); }
 
-  // boot: honor a share link (#d=<dataset>&q=<base64>), else default to the first dataset
-  (function boot() {
+  // boot: wait for the real-data file (assets/data.js, defer-loaded), build rows, then honor a share
+  // link (#d=<dataset>&q=<base64>) or default to the first dataset.
+  (function waitData(tries) {
+    if (!window.MALLOYYO_DATA) {
+      if (tries > 80) { app.innerHTML = '<p class="sandbox-note">The sandbox data file did not load. Reload the page to try again.</p>'; return; }
+      setTimeout(function () { waitData(tries + 1); }, 100);
+      return;
+    }
+    DATASETS.forEach(function (d) { d.rows = d.build(); });
+    boot();
+  })(0);
+  function boot() {
     var dm = /[#&]d=([^&]+)/.exec(location.hash || '');
     var qm = /[#&]q=([^&]+)/.exec(location.hash || '');
     var ds = DATASETS[0];
@@ -631,5 +605,5 @@
       } catch (e) { /* malformed link — fall through to the default */ }
     }
     selectDataset(ds, true);
-  })();
+  }
 })();
