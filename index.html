@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Malloyyo | A Simple MCP Server for Malloy Semantic Models</title>
+  <meta name="description" content="Malloyyo teaches your AI to talk to your data: it serves your Malloy semantic model over MCP, so you ask in plain language and the same question gets the same right answer every time.">
+  
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Malloyyo, Talk to your data.">
+  <meta property="og:description" content="Malloyyo teaches your AI to talk to your data: it serves your Malloy semantic model over MCP, so you ask in plain language and the same question gets the same right answer every time.">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='#e8a33d'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&amp;display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <style>:root{ --font-head: 'Geist Mono', ui-monospace, 'IBM Plex Mono', monospace; }</style>
+  <script type="application/ld+json">
+  {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Malloyyo",
+  "description": "Malloyyo teaches your AI to talk to your data: it serves your Malloy semantic model over MCP, so you ask in plain language and the same question gets the same right answer every time."
+}
+  </script>
+</head>
+<body class=" theme-dark">
+  <a class="skip" href="#main">Skip to content</a>
+  
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+    <symbol id="ic-heart" viewBox="0 0 24 24"><path d="M12 20s-6.5-4-9-8c-1.9-3.1 0-6.6 3.3-6.6 1.9 0 3 1.2 3.7 2.4.7-1.2 1.8-2.4 3.7-2.4C20 5.4 21.9 8.9 20 12c-2.5 4-8 8-8 8z"/></symbol>
+    <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/></symbol>
+    <symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="ic-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+    <symbol id="ic-stethoscope" viewBox="0 0 24 24"><path d="M6 3v6a4 4 0 0 0 8 0V3"/><path d="M10 17a6 6 0 0 0 6-6"/><circle cx="18.5" cy="9.5" r="2"/></symbol>
+    <symbol id="ic-puzzle" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><path d="M13.5 16.5h6.5M16.5 13.5v6.5"/></symbol>
+    <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 6.2a3 3 0 0 1 0 5.6M16.5 19a5.5 5.5 0 0 0-1.8-3"/></symbol>
+    <symbol id="ic-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z"/></symbol>
+    <symbol id="ic-bolt" viewBox="0 0 24 24"><path d="M13 3L5 13h5l-1 8 8-10h-5z"/></symbol>
+    <symbol id="ic-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5M3 16.5l9 5 9-5"/></symbol>
+    <symbol id="ic-database" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/></symbol>
+    <symbol id="ic-code" viewBox="0 0 24 24"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></symbol>
+    <symbol id="ic-phone" viewBox="0 0 24 24"><path d="M5 4h3.2l1.4 4.2-2 1.4a11.5 11.5 0 0 0 5.3 5.3l1.4-2 4.2 1.4V18a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="ic-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5l8 5.5 8-5.5"/></symbol>
+    <symbol id="ic-pin" viewBox="0 0 24 24"><path d="M12 21s-6.2-5.4-6.2-10.2A6.2 6.2 0 0 1 18.2 10.8C18.2 15.6 12 21 12 21z"/><circle cx="12" cy="10.7" r="2.3"/></symbol>
+  </defs></svg>
+
+  <header class="site-header">
+    <a class="brand" href="index.html">Malloyyo</a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="nav" aria-label="Primary">
+      <a href="index.html">Home</a><a href="https://github.com/malloydata/malloyyo">GitHub</a><a href="https://www.malloydata.dev">Malloy</a>
+      <a class="cta cta-sm" href="#sandbox">Try it live</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    
+<section class="hero hero-code" id="top">
+  <div class="hero-inner hero-code-inner">
+    <div class="hero-code-copy">
+      <p class="kicker">From the Malloy project · Open source</p>
+      <h1>Talk to your data.</h1>
+      <p class="lede">Ask in plain language; get answers you can trust. Malloyyo serves your Malloy semantic model to any AI over MCP: measures, dimensions, and joins are defined once in the model, your AI composes queries against it instead of guessing at SQL, and the same question gets the same right answer every time. All you need is a database connection (or an S3 bucket) and a GitHub repository for the model.</p>
+      <div class="hero-cta">
+        <a class="cta" href="#sandbox">Try it live</a>
+        <a class="cta cta-ghost" href="https://github.com/malloydata/malloyyo">View on GitHub</a>
+      </div>
+      <p class="hero-note">Open source · DuckDB built in · Serves any MCP client</p>
+      <ul class="badges"><li>Served over MCP</li><li>Consistent by construction</li><li>DuckDB built in</li><li>The model is the boundary</li></ul>
+    </div>
+    
+    <figure class="code-card hero-code-card">
+      <figcaption class="code-card-bar" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span><em>ask: &quot;revenue by region, top five&quot;</em></figcaption>
+      <pre><code><span class="tok-c">// the AI composes against your model, never raw SQL</span>
+<span class="tok-k">run:</span> <span class="tok-v">orders</span> <span class="tok-k">-&gt;</span> {
+  <span class="tok-k">group_by:</span> region
+  <span class="tok-k">aggregate:</span> <span class="tok-v">revenue</span> <span class="tok-k">is</span> sum(amount)
+  <span class="tok-k">order_by:</span> revenue <span class="tok-k">desc</span>
+  <span class="tok-k">limit:</span> <span class="tok-v">5</span>
+}</code></pre>
+    </figure>
+    
+  </div>
+</section>
+
+
+<section id="sandbox" class="band sandbox-section">
+  <div class="wrap">
+    <h2>This is what talking to your data looks like</h2>
+    <p class="section-sub">Pick a dataset and click a ★ question: the question becomes a Malloy query composed against the model, the query compiles to SQL, and your answer comes back, live in this page. Then edit anything. That loop is the whole product.</p>
+    <div id="sandbox-app" class="sandbox">
+      <noscript>
+        <pre class="code"><code>run: flights -&gt; {
+  group_by: carrier
+  aggregate: flight_count is count()
+  order_by: flight_count desc
+}</code></pre>
+        <p class="sandbox-note">This live demo needs JavaScript. You can also <a href="#sandbox">get started in VS Code</a> to run Malloy against your own data.</p>
+      </noscript>
+    </div>
+  </div>
+  <script src="assets/sandbox.js" defer></script>
+</section>
+
+
+
+<section id="how" class="wrap">
+  <h2>How to talk to YOUR data</h2>
+  <ol class="steps">
+    <li><h3>Serve your model</h3><p>Describe your data once in Malloy: sources, joins, measures. Publish it with two commands (malloyyo login, then malloyyo publish), or point Malloyyo at a GitHub repo and a webhook keeps it fresh on every push. DuckDB is built in, so Parquet on S3 or any web server works with no warehouse at all.</p></li><li><h3>Connect your AI</h3><p>Add the /mcp endpoint to Claude (or any MCP client) and sign in. The AI discovers the tools it needs on its own: list_sources, describe_source, query, and yo_help. From that moment it knows what your data means, not just what tables exist.</p></li><li><h3>Ask in plain language</h3><p>Which manufacturers recalled the most vehicles? Where does revenue come from? The AI composes governed Malloy against your model, never raw SQL, so the numbers stop drifting. Every query is logged in the ltool browser, where you can edit, favorite, re-run, and share it.</p></li>
+  </ol>
+</section>
+
+
+
+<section id="recipes" class="wrap recipes-section">
+  <h2>Public datasets</h2>
+  <p class="section-sub">The same public dataset cards the live app serves, with their real example questions. Every one of these runs in the sandbox above; the code below each card is the Malloy the question compiles from.</p>
+  <div class="recipes-tools">
+    <input class="recipes-search" type="search" placeholder="Search recipes (e.g. join, nest, filter)…" aria-label="Search recipes" autocomplete="off">
+    <span class="recipes-count" aria-live="polite"></span>
+  </div>
+  <div class="recipes-grid">
+    
+    <article class="recipe-card" data-title="auto_recalls" data-tags="NHTSA recalls vehicles safety public" data-blurb="Auto recalls from the NHTSA, analyzed by component category and recall trend over time. ★ Which manufacturers have recalled the most vehicles in total? ★ The largest Do Not Drive recalls, and what fraction of owners actually got the fix? ★ Porsche recalls grouped by subject.">
+      <h3>auto_recalls</h3>
+      <p>Auto recalls from the NHTSA, analyzed by component category and recall trend over time. ★ Which manufacturers have recalled the most vehicles in total? ★ The largest Do Not Drive recalls, and what fraction of owners actually got the fix? ★ Porsche recalls grouped by subject.</p>
+      <pre class="code"><code>run: recalls -&gt; {
+  group_by: manufacturer
+  aggregate:
+    campaigns is count()
+    vehicles is sum(vehicles_affected)
+  order_by: vehicles desc
+}</code></pre>
+      <p class="recipe-tags">NHTSA recalls vehicles safety public</p>
+    </article>
+    
+    <article class="recipe-card" data-title="baby_names" data-tags="SSA names decades states public" data-blurb="Baby names from the Social Security Administration. ★ Top names in each decade. ★ Which names from the 1960s were most over-represented in Louisiana compared to their national popularity? ★ Tell me about the name Kyle: popularity over time, gender breakdown, peak years, top states.">
+      <h3>baby_names</h3>
+      <p>Baby names from the Social Security Administration. ★ Top names in each decade. ★ Which names from the 1960s were most over-represented in Louisiana compared to their national popularity? ★ Tell me about the name Kyle: popularity over time, gender breakdown, peak years, top states.</p>
+      <pre class="code"><code>run: names -&gt; {
+  group_by: decade
+  nest: top_names is {
+    group_by: name
+    aggregate: births is sum(births)
+    order_by: births desc
+    limit: 3
+  }
+}</code></pre>
+      <p class="recipe-tags">SSA names decades states public</p>
+    </article>
+    
+    <article class="recipe-card" data-title="order_items" data-tags="ecommerce orders example public" data-blurb="Order line items from the example models set. Ask it revenue, basket, and product questions the same way: in plain language, against measures the model defines once.">
+      <h3>order_items</h3>
+      <p>Order line items from the example models set. Ask it revenue, basket, and product questions the same way: in plain language, against measures the model defines once.</p>
+      <pre class="code"><code>run: order_items -&gt; {
+  group_by: product_category
+  aggregate: revenue is sum(sale_price)
+  order_by: revenue desc
+}</code></pre>
+      <p class="recipe-tags">ecommerce orders example public</p>
+    </article>
+    
+  </div>
+  <p class="recipes-empty" hidden>No recipes match that search.</p>
+</section>
+
+
+
+<section id="code" class="band">
+  <div class="wrap">
+    <h2>How it fits together</h2>
+    <p class="section-sub">The architecture from the repository README: a thin server between your AI and your data, with the semantic model as the only doorway.</p>
+    <pre class="code"><code>   MCP client (claude.ai)            Browser (you)
+           |  OAuth 2.1                    |  Google sign-in
+   +-------v----------+          +---------v---------+
+   |  MCP server /mcp |          |      Web UI       |
+   | analytical tools |          |  datasets · ltool |
+   +-------+----------+          +---------+---------+
+           +--------------+----------------+
+                          |  compile · run
+   +----------------------v-----------------------+       Authoring models
+   |                   Malloyyo                   | &lt;---  · Malloyyo CLI (publish)
+   |        load · compile · store · serve        |       · a GitHub repo + webhook
+   +------+-----------------------------+---------+       · Claude (already knows Malloy)
+          |                             |
+   +------v------+             +--------v--------+
+   |  metadata   |             |  Analytical DB  |
+   |  datasets   |             |  BigQuery ·     |
+   |  models     |             |  Snowflake ·    |
+   |  users      |             |  MotherDuck ·   |
+   |             |             |  (or S3/GCS)    |
+   +-------------+             +-----------------+</code></pre>
+    <p class="code-note"><strong>Publish in two commands:</strong> <code>malloyyo login &lt;target&gt;</code> then <code>malloyyo publish &lt;target&gt;</code> bundles your <code>*.malloy</code> files, records the git commit, and pushes. If the model does not compile, the push is rejected and the live model is untouched. Or point Malloyyo at a GitHub repo and a webhook refreshes it on every push. Install: <code>npm i -g @malloydata/malloyyo</code> (Node 20+).</p>
+  </div>
+</section>
+
+
+
+<section id="features" class="wrap features-section">
+  <h2>Why Malloyyo?</h2>
+  <p class="section-sub">A thin layer between the AI and your data. It serves the semantic model; the model keeps the numbers honest.</p>
+  <div class="features">
+    
+    <article class="feature-row">
+      
+      <div class="feature-copy">
+        <p class="kicker">Consistent by construction</p>
+        <h3>The same question gets the same right answer</h3>
+        <p>AI plus a raw database means invented columns, wrong joins, and fan-out double-counts that still look right. With a Malloy semantic layer in between, the AI composes queries against measures and joins that were defined once, correctly. The numbers stop drifting.</p>
+        
+      </div>
+    </article>
+    
+    <article class="feature-row">
+      
+      <div class="feature-copy">
+        <p class="kicker">Tight control</p>
+        <h3>The model is the boundary</h3>
+        <p>The AI can only query what the semantic model exposes. Nothing outside it is reachable. Givens parameterize row-level restrictions, and a restricted query mode shuts off imports and raw table access entirely.</p>
+        
+      </div>
+    </article>
+    
+    <article class="feature-row">
+      
+      <div class="feature-copy">
+        <p class="kicker">Develop, then publish</p>
+        <h3>One command from repo to live endpoint</h3>
+        <p>Build the model locally, then publish it with the CLI, or point Malloyyo at a GitHub repo and a webhook refreshes it on every push. If the model does not compile, the push is rejected and the live model is untouched. DuckDB is built in, so Parquet over plain HTTP works with no warehouse at all.</p>
+        
+      </div>
+    </article>
+    
+  </div>
+</section>
+
+
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>Start talking to your data.</h2>
+    <p>One-click deploy to Vercel, or self-host with Docker. Claude already knows Malloy, so authoring the model is fast: describe your data once, and every question after that is a conversation.</p>
+    <a class="cta cta-invert" href="#sandbox">Try it live</a>
+  </div>
+</section>
+
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap foot-top">
+      <div class="foot-about">
+        
+        <p class="foot-brand">Malloyyo</p>
+        <p class="muted foot-blurb">A thin, open-source layer that serves Malloy semantic models to any AI over MCP. From the Malloy project.</p>
+      </div>
+      <div class="foot-meta">
+        
+        
+        <a class="foot-social" href="https://github.com/malloydata/malloyyo" rel="me noopener" target="_blank">GitHub</a><a class="foot-social" href="https://docs.malloydata.dev/documentation" rel="me noopener" target="_blank">Malloy documentation</a><a class="foot-social" href="https://malloydata.github.io/slack" rel="me noopener" target="_blank">Slack community</a>
+      </div>
+    </div>
+    <div class="wrap foot-legal">
+      <p class="muted">&copy; <span id="year"></span> Malloyyo. All rights reserved.</p>
+      
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    (function () {
+      var t = document.querySelector('.nav-toggle'), n = document.getElementById('nav');
+      if (!t || !n) return;
+      t.addEventListener('click', function () {
+        var open = n.classList.toggle('open');
+        t.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      n.addEventListener('click', function (e) { if (e.target.tagName === 'A') { n.classList.remove('open'); t.setAttribute('aria-expanded', 'false'); } });
+    })();
+  </script>
+  <script src="assets/motion.js" defer></script>
+</body>
+</html>
