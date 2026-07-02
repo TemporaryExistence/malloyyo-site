@@ -17,10 +17,14 @@ python3 -m http.server 8000   # or: npx serve .   (or just open index.html)
 ## What's in it
 
 - **A live sandbox** (`assets/sandbox.js`): a real, working subset of Malloy that runs entirely in the
-  browser. Pick one of the three public datasets (`auto_recalls`, `baby_names`, `order_items`), click a
-  ★ question, and the page walks the whole loop: *you ask in plain language → the Malloy your AI would
-  compose → the SQL it compiles to → your answer*, computed live from your (editable) query. The example
-  questions are the real ones from the live site's dataset cards.
+  browser. Pick one of the three example_models sources (`order_items`, `auto_recalls`, `baby_names`),
+  click a ★ question, and the page walks the whole loop: *you ask in plain language → the Malloy your AI
+  would compose → the SQL it compiles to → your answer*, computed live from your (editable) query. The
+  example questions are the real ones from the live site's dataset cards; nested results render as
+  nested tables, like Malloy's own renderer.
+- **The full public-dataset roster**, grouped as the live app serves it: `example_models` (the three
+  sandbox sources), `movies` (its real example questions, explored on the live app), and
+  `google_analytics`.
 - **Real data:** `auto_recalls` and `baby_names` run on real public data (`assets/data-recalls.js` and
   `assets/data-names.js`, loaded on demand per dataset): the NHTSA recall flat files (1,500+ real vehicle
   campaigns since 1996, with real completion rates from NHTSA quarterly reports where filed) and the SSA
