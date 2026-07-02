@@ -124,6 +124,7 @@
       blurb: 'Vehicle recall campaigns (real NHTSA schema, synthetic sample).',
       cols: ['manufacturer', 'component', 'subject', 'year', 'vehicles_affected', 'do_not_drive', 'completion_pct'],
       colAlias: { maker: 'manufacturer', vehicles: 'vehicles_affected' },
+      plainCols: ['year'],
       note: 'The live dataset answers from real NHTSA data.',
       build: buildRecalls,
       examples: [
@@ -151,6 +152,7 @@
       blurb: 'US baby names by decade and state (real SSA schema, synthetic sample).',
       cols: ['name', 'sex', 'decade', 'state', 'births'],
       colAlias: {},
+      plainCols: ['decade'],
       note: 'The live dataset answers from real SSA data.',
       build: buildNames,
       examples: [
@@ -186,7 +188,7 @@
           try: 'Add  avg_ticket is avg(sale_price)  to the aggregate list.',
           malloy: "run: order_items -> {\n  group_by: product_category\n  aggregate: revenue is sum(sale_price)\n  order_by: revenue desc\n}" },
         { id: 'o-region', ask: 'What does each region buy the most of?', label: 'Regional mix', blurb: 'A nested breakdown: each region\'s top categories, one query.',
-          teach: 'The same nest: shape as baby_names — the pattern transfers across datasets because the language is the same.',
+          teach: 'The same nest: shape as baby_names. The pattern transfers across datasets because the language is the same.',
           try: 'Nest by product instead of product_category.',
           malloy: "run: order_items -> {\n  group_by: region\n  aggregate: revenue is sum(sale_price)\n  nest: top_categories is {\n    group_by: product_category\n    aggregate: revenue is sum(sale_price)\n    order_by: revenue desc\n    limit: 2\n  }\n  order_by: revenue desc\n}" },
         { id: 'o-free', ask: 'Which categories spike in the holiday season?', label: 'Your turn', free: true,
@@ -214,7 +216,7 @@
     if (m && m[1] !== DS.source) {
       var owner = DATASETS.filter(function (d) { return d.source === m[1]; })[0];
       throw err('“' + m[1] + '” is not this dataset\'s source. This tab queries `' + DS.source + '`' +
-        (owner ? ' — switch to the ' + owner.label + ' dataset above to query `' + m[1] + '`.' : '.'));
+        (owner ? '; switch to the ' + owner.label + ' dataset above to query `' + m[1] + '`.' : '.'));
     }
   }
   function topBlock(src) {
@@ -578,7 +580,9 @@
       var tr = document.createElement('tr');
       result.columns.forEach(function (c) {
         var td = document.createElement('td'); var v = r[c];
-        td.textContent = (typeof v === 'number') ? v.toLocaleString() : (v == null ? '' : String(v));
+        // year-like columns (year, decade) render plain: "1,970" in a trust-the-numbers demo is fatal
+        var plain = (DS.plainCols || []).indexOf(c) !== -1;
+        td.textContent = (typeof v === 'number') ? (plain ? String(v) : v.toLocaleString()) : (v == null ? '' : String(v));
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
