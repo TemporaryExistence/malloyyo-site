@@ -325,8 +325,9 @@
           row[spec.nest.name] = sub.rows.map(function (sr) {
             var label = spec.nest.spec.groupBy[0] ? sr[spec.nest.spec.groupBy[0]] : '';
             var metric = spec.nest.spec.aggregates[0] ? sr[spec.nest.spec.aggregates[0].name] : '';
-            return label + (metric !== '' ? ':' + metric : '');
-          }).join(' · ');
+            if (typeof metric === 'number') metric = metric.toLocaleString();
+            return label + (metric !== '' ? ' ' + metric : '');
+          }).join('  ·  ');
         }
         return row;
       });
