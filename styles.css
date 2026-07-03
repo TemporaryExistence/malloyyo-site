@@ -1132,6 +1132,9 @@ body.theme-dark .recipe-explore { display: flex; flex-wrap: wrap; align-items: c
 body.theme-dark .explore-chip { display: inline-block; padding: .22rem .7rem; border: 1px solid #3a4150; border-radius: 8px; color: #e8a33d; text-decoration: none; }
 body.theme-dark .explore-chip:hover { border-color: #e8a33d; background: rgba(232, 163, 61, 0.08); }
 body.theme-dark .explore-note { font-size: .72rem; color: #7e8a95; }
+/* ★ question links — run that question in the sandbox (the live app links every question the same way) */
+body.theme-dark .q-link { color: inherit; text-decoration: none; border-bottom: 1px dotted #4a5260; }
+body.theme-dark .q-link:hover { color: #e8a33d; border-bottom-color: #e8a33d; }
 /* nested result mini-tables — the nest's own columns, rendered like Malloy's renderer */
 body.theme-dark .sandbox-results td.has-nested { padding: .3rem .6rem; }
 body.theme-dark .nested-table { width: auto; min-width: 16rem; border-collapse: collapse; margin: 0; }

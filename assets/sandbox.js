@@ -704,12 +704,24 @@
   function b64encode(s) { return btoa(unescape(encodeURIComponent(s))); }
   function b64decode(s) { return decodeURIComponent(escape(atob(s))); }
 
-  // dataset-card "Explore with: the live sandbox" chips — jump to the sandbox with that dataset selected
+  // dataset-card links — "Explore with" chips select the dataset; ★ question links (data-explore-q)
+  // additionally load that question's Malloy and run it, like the live app's ltool permalinks.
   document.addEventListener('click', function (e) {
     var a = e.target && e.target.closest ? e.target.closest('[data-explore-ds]') : null;
     if (!a) return;
     var hit = DATASETS.filter(function (d) { return d.key === a.getAttribute('data-explore-ds'); })[0];
-    if (hit) selectDataset(hit); // the anchor's own #sandbox navigation handles the scroll
+    if (!hit) return;
+    var qb = a.getAttribute('data-explore-q');
+    if (qb) {
+      var q;
+      try { q = b64decode(qb); } catch (err2) { selectDataset(hit); return; }
+      selectDataset(hit, false, true, function () {
+        editor.value = q; editor.rows = Math.max(5, q.split('\n').length + 1);
+        runQuery(true);
+      });
+    } else {
+      selectDataset(hit); // the anchor's own #sandbox navigation handles the scroll
+    }
   });
 
   // boot: pick the target dataset (share link #d=<dataset>&q=<base64>, else the first), let
