@@ -715,7 +715,11 @@
     if (qb) {
       var q;
       try { q = b64decode(qb); } catch (err2) { selectDataset(hit); return; }
+      var askText = (a.textContent || '').trim();
       selectDataset(hit, false, true, function () {
+        // the ask line must show THIS question, not the previously selected example's
+        Array.prototype.forEach.call(tabs.children, function (t) { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+        setAsk(askText, true);
         editor.value = q; editor.rows = Math.max(5, q.split('\n').length + 1);
         runQuery(true);
       });
@@ -735,8 +739,13 @@
     if (qm) { try { q = b64decode(decodeURIComponent(qm[1])); } catch (e) { /* malformed link — default */ } }
     if (q !== null) {
       selectDataset(ds, true, true, function () {
+        // a shared link carries a query but no question text: hide the ask line rather than show a wrong one
+        Array.prototype.forEach.call(tabs.children, function (t) { t.classList.remove('is-active'); t.setAttribute('aria-selected', 'false'); });
+        setAsk('');
         editor.value = q; editor.rows = Math.max(5, q.split('\n').length + 1);
         runQuery(true);
+        var target = document.getElementById('sandbox');
+        if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'instant', block: 'start' });
       });
     } else {
       selectDataset(ds, true);
